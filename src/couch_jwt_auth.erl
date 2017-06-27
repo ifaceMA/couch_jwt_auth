@@ -66,7 +66,7 @@ jwt_authentication_handler(Req) ->
         Type:Msg ->
           Arr = #{"Exception" => Type, "Message" => Msg, "Stacktrace" => erlang:get_stacktrace()},
           Result = io:format("~90000p~n" , [Arr]),
-          ?LOG_ERROR("An exception occured while authenticating the token:  ~s", [Arr]),
+          ?LOG_ERROR("An exception occured while authenticating the token:  ~s", Result),
           throw({unauthorized, <<"Token rejected">>})
       end;
     _ -> Req
