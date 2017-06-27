@@ -43,6 +43,7 @@
 -ifndef(JSON_DECODE).
 %on CouchDB 2.0 JSON_DECODE is no longer defined
 -define(LOG_INFO(Format, Args), couch_log:info(Format, Args)).
+-define(LOG_ERROR(Format, Args), couch_log:error(Format, Args)).
 -define(JSON_DECODE(Json), jsx:decode(list_to_binary(Json))).
 -endif.
 
@@ -58,9 +59,14 @@ jwt_authentication_handler(Req) ->
         token_auth_user(Req, decode(Token))
       catch
         % // return generic error message (https://www.owasp.org/index.php/Authentication_Cheat_Sheet#Authentication_Responses)
+        %throw:_ -> throw({unauthorized, <<"Token rejected">>});
+        %error:_ -> throw({unauthorized, <<"Token rejected">>})
         % we return the exception now instead so that we can debug the reason why a token got rejected.
-        throw:E -> throw({unauthorized, <<"Token rejected">>, E});
-        error:E -> throw({unauthorized, <<"Token rejected">>, E})
+        Type:Message ->
+          Arr = #{"Exception" => Type, "Message" => Msg, "Stacktrace" => erlang:get_stacktrace()},
+          Result = io:format("~90000p~n" , [Arr]),
+          LOG_ERROR("An exception occured while authenticating the token:  ~s", [Arr]),
+          throw:_ -> throw({unauthorized, <<"Token rejected">>})
       end;
     _ -> Req
   end.
