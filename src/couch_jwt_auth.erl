@@ -62,11 +62,11 @@ jwt_authentication_handler(Req) ->
         %throw:_ -> throw({unauthorized, <<"Token rejected">>});
         %error:_ -> throw({unauthorized, <<"Token rejected">>})
         % we return the exception now instead so that we can debug the reason why a token got rejected.
-        Type:Message ->
+        Type:Msg ->
           Arr = #{"Exception" => Type, "Message" => Msg, "Stacktrace" => erlang:get_stacktrace()},
           Result = io:format("~90000p~n" , [Arr]),
           LOG_ERROR("An exception occured while authenticating the token:  ~s", [Arr]),
-          throw:_ -> throw({unauthorized, <<"Token rejected">>})
+          throw({unauthorized, <<"Token rejected">>})
       end;
     _ -> Req
   end.
