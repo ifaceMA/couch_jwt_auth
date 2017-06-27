@@ -35,7 +35,6 @@
 -ifndef(LOG_INFO).
 %we're most certainly compiling for CouchDB 2.0
 -define(LOG_INFO(Format, Args), couch_log:info(Format, Args)).
--define(LOG_ERROR(Format, Args), couch_log:error(Format, Args)).
 -define(CONFIG_GET(Section), config:get(Section)).
 -else.
 -define(CONFIG_GET(Section), couch_config:get(Section)).
@@ -44,7 +43,6 @@
 -ifndef(JSON_DECODE).
 %on CouchDB 2.0 JSON_DECODE is no longer defined
 -define(LOG_INFO(Format, Args), couch_log:info(Format, Args)).
--define(LOG_ERROR(Format, Args), couch_log:error(Format, Args)).
 -define(JSON_DECODE(Json), jsx:decode(list_to_binary(Json))).
 -endif.
 
@@ -65,8 +63,7 @@ jwt_authentication_handler(Req) ->
         % we return the exception now instead so that we can debug the reason why a token got rejected.
         Type:Msg ->
           Arr = #{"Exception" => Type, "Message" => Msg, "Stacktrace" => erlang:get_stacktrace()},
-          Result = io:format("~90000p~n" , [Arr]),
-          ?LOG_ERROR("An exception occured while authenticating the token:  ~s", Result),
+          ?LOG_INFO("An exception occured while authenticating the token:  ~9000p", [Arr]),
           throw({unauthorized, <<"Token rejected">>})
       end;
     _ -> Req
